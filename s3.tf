@@ -1,8 +1,8 @@
 resource "aws_s3_bucket" "inbox" {
-  bucket = "nick-inbox"
+  bucket = "nick-finances-inbox"
 
   tags = {
-    Project = "PersonalPipeline"
+    Project = var.project_name
   }
 }
 
@@ -24,7 +24,9 @@ resource "aws_s3_bucket_policy" "ses_to_s3_policy" {
         Condition = {
           StringEquals = {
             "AWS:SourceAccount" = var.aws_account_id
-            "AWS:SourceArn" = "arn:aws:ses:${var.aws_region}:${var.aws_account_id}:receipt-rule-set/${aws_ses_receipt_rule_set.personal_pipeline_set.rule_set_name}:receipt-rule/${local.ses_to_s3_rule_name}"
+          }
+          ArnLike = {
+            "AWS:SourceArn" = "arn:aws:ses:${var.aws_region}:${var.aws_account_id}:receipt-rule-set/${aws_ses_receipt_rule_set.personal_finance_pipeline_set.rule_set_name}:receipt-rule/${local.ses_to_s3_rule_name}*"
           }
         }
       }

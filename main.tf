@@ -17,6 +17,12 @@ provider "aws" {
   profile = var.profile_name
 }
 
+locals {
+  ses_to_s3_rule_name = "store_in_s3"
+  lambda_function_name = "email_processor"
+  lambda_handler = "lambda_function.handler"
+}
+
 resource "aws_resourcegroups_group" "rg" {
   name = "personal-pipeline-rg"
   resource_query {
@@ -29,16 +35,12 @@ resource "aws_resourcegroups_group" "rg" {
     {
       "Key": "Project",
       "Values": [
-        "PersonalPipeline"
+        "${var.project_name}"
       ]
     }
   ]
 }
 JSON
   }
-}
-
-locals {
-  ses_to_s3_rule_name = "store_in_s3"
 }
 
