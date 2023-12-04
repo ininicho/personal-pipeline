@@ -4,10 +4,6 @@ terraform {
       source = "hashicorp/aws"
       version = "~> 5.0"
     }
-    # cloudflare = {
-    #   source = "cloudflare/cloudflare"
-    #   version = "~> 4.0"
-    # }
   }
   backend "s3" {}
 }
@@ -15,11 +11,15 @@ terraform {
 provider "aws" {
   region = "us-east-2"
   profile = var.profile_name
+  default_tags {
+    tags = {
+      Project        = var.project_name
+    }
+  }
 }
 
 locals {
   ses_to_s3_rule_name = "store_in_s3"
-  lambda_function_name = "email_processor"
   lambda_handler = "lambda_function.handler"
 }
 

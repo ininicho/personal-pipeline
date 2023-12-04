@@ -35,3 +35,6 @@ terraform.rc
 
 # Zip files
 *.zip
+
+.DS_Store
+plan

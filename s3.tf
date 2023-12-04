@@ -1,9 +1,6 @@
+# Inbox Bucket
 resource "aws_s3_bucket" "inbox" {
   bucket = "nick-finances-inbox"
-
-  tags = {
-    Project = var.project_name
-  }
 }
 
 resource "aws_s3_bucket_policy" "ses_to_s3_policy" {
@@ -32,5 +29,10 @@ resource "aws_s3_bucket_policy" "ses_to_s3_policy" {
       }
     ]
   })
+}
+
+# Expense Bucket
+resource "aws_s3_bucket" "expense" {
+  bucket = "nick-finances-expense"
 }
 
