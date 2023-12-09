@@ -27,7 +27,7 @@ def process_csv(csv_file, bank):
         reader = csv.DictReader(csv_file.splitlines(), fieldnames=CIBC_FIELDS)
 
     # Update rows with DB fields
-    with table.batch_writer() as batch:
+    with table.batch_writer(overwrite_by_pkeys=['id', 'date']) as batch:
         now = datetime.now()
         for row in reader:
             db_row = {}
