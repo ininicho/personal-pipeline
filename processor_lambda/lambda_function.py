@@ -1,6 +1,6 @@
 import urllib.parse
 import boto3
-import csv
+import processor
 
 s3 = boto3.client('s3')
 
@@ -15,8 +15,15 @@ def handler(event, context):
     raw_file = response['Body'].read()
 
     # Read CSV file
-    reader = csv.DictReader(raw_file.decode('utf-8').splitlines())
-    print('CSV file read')
+    try:
+        processor.process_csv(raw_file.decode('utf-8'), key.split('-')[0])
+        print('CSV file processed')
+    except Exception as e:
+        print(e)
+        print('Error processing CSV file')
+        raise e
 
-    # Print first row
-    print(next(reader))
+    # Delete CSV file from S3
+    s3.delete_object(Bucket=bucket, Key=key)
+    print('CSV file deleted from S3')
+

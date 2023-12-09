@@ -1,4 +1,4 @@
-# Policy: ReadWriteS3, LambdaLogging
+# Policy: ReadWriteS3, LambdaLogging, ReadWriteDynamoDB
 resource "aws_iam_policy" "read_write_s3" {
   name        = "ReadWriteS3"
   description = "Read and write to S3 bucket"
@@ -34,6 +34,32 @@ resource "aws_iam_policy" "lambda_logging" {
         ]
         Effect   = "Allow"
         Resource = "arn:aws:logs:*:*:*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "read_write_expense_dynamodb" {
+  name        = "ReadWriteExpenseDynamoDB"
+  description = "Read and write to Expense DynamoDB table"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "dynamodb:BatchGetItem",
+          "dynamodb:BatchWriteItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:GetItem",
+          "dynamodb:GetRecords",
+          "dynamodb:PutItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:UpdateItem"
+        ]
+        Effect   = "Allow"
+        Resource = aws_dynamodb_table.expenses.arn
       }
     ]
   })
@@ -81,6 +107,11 @@ resource "aws_iam_role_policy_attachment" "processor_lambda_role_attachment" {
 resource "aws_iam_role_policy_attachment" "processor_lambda_logging_attachment" {
   role       = aws_iam_role.processor_lambda_role.name
   policy_arn = aws_iam_policy.lambda_logging.arn
+}
+
+resource "aws_iam_role_policy_attachment" "processor_lambda_dynamodb_attachment" {
+  role       = aws_iam_role.processor_lambda_role.name
+  policy_arn = aws_iam_policy.read_write_expense_dynamodb.arn
 }
 
 # Cloudwatch Group
@@ -133,6 +164,14 @@ resource "aws_lambda_function" "processor" {
   source_code_hash = data.archive_file.processor_lambda.output_base64sha256
 
   runtime = "python3.10"
+
+  environment {
+      variables = {
+          DB_TABLE_NAME = aws_dynamodb_table.expenses.name
+          AMEX_FIELDS   = "date;id;amount;description;additional_info"
+          CIBC_FIELDS   = "date;description;credit;debit"
+      }
+    }
 }
 
 # S3 Trigger
